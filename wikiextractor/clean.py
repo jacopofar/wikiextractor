@@ -25,6 +25,6 @@ def clean_markup(markup, keep_links=False, ignore_headers=True):
     resetIgnoredTags()
 
     if ignore_headers:
-        paragraphs = filter(lambda s: not s.startswith('## '), paragraphs)
+        paragraphs = [s for s in paragraphs if not s.startswith('## ')]
 
     return paragraphs
