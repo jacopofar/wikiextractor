@@ -1429,7 +1429,7 @@ def normalizeNamespace(ns):
 # https://github.com/Wikia/app/blob/dev/extensions/ParserFunctions/ParserFunctions_body.php
 
 
-class Infix():
+class Infix:
 
     """Infix operators.
     The calling sequence for the infix is:
