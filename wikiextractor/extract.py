@@ -753,7 +753,7 @@ selfClosing_tag_patterns = [
 # Match HTML placeholder tags
 placeholder_tag_patterns = [
     (re.compile(r'<\s*%s(\s*| [^>]+?)>.*?<\s*/\s*%s\s*>' % (tag, tag), re.DOTALL | re.IGNORECASE),
-     repl) for tag, repl in list(placeholder_tags.items())
+     repl) for tag, repl in placeholder_tags.items()
 ]
 
 # Match preformatted lines
