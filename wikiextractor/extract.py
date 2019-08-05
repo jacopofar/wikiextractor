@@ -3,7 +3,9 @@
 import re
 import cgi
 from itertools import zip_longest
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 from html.entities import name2codepoint
 import logging
 import time
@@ -11,10 +13,10 @@ import time
 # ----------------------------------------------------------------------
 
 # match tail after wikilink
-tailRE = re.compile('\w+')
+tailRE = re.compile(r'\w+')
 syntaxhighlight = re.compile('&lt;syntaxhighlight .*?&gt;(.*?)&lt;/syntaxhighlight&gt;', re.DOTALL)
 
-## PARAMS ####################################################################
+# PARAMS ####################################################################
 
 # This is obtained from <siteinfo>
 urlbase = ''
@@ -147,8 +149,8 @@ def clean(extractor, text, expand_templates=False, escape_doc=True):
     text = text.replace('\t', ' ')
     text = spaces.sub(' ', text)
     text = dots.sub('...', text)
-    text = re.sub(u' (,:\.\)\]»)', r'\1', text)
-    text = re.sub(u'(\[\(«) ', r'\1', text)
+    text = re.sub(r' (,:\.\)\]»)', r'\1', text)
+    text = re.sub(r'(\[\(«) ', r'\1', text)
     text = re.sub(r'\n\W+?\n', '\n', text, flags=re.U)  # lines with only punctuations
     text = text.replace(',,', ',').replace(',.', '.')
     if escape_doc:
@@ -194,9 +196,8 @@ def compact(text, mark_headers=False):
 
             headers[lev] = title
             # drop previous headers
-            for i in headers.keys():
-                if i > lev:
-                    del headers[i]
+            for _ in set(i for i in headers if i > lev):
+                del headers[_]
             emptySection = True
             continue
         # Handle page title
@@ -365,7 +366,7 @@ wgUrlProtocols = [
 # as well as U+3000 is IDEOGRAPHIC SPACE for bug 19052
 EXT_LINK_URL_CLASS = r'[^][<>"\x00-\x20\x7F\s]'
 ExtLinkBracketedRegex = re.compile(
-    '\[(((?i)' + '|'.join(wgUrlProtocols) + ')' + EXT_LINK_URL_CLASS + r'+)\s*([^\]\x00-\x08\x0a-\x1F]*?)\]',
+    r'\[(((?i)' + '|'.join(wgUrlProtocols) + ')' + EXT_LINK_URL_CLASS + r'+)\s*([^\]\x00-\x08\x0a-\x1F]*?)\]',
     re.S | re.U)
 EXT_IMAGE_REGEX = re.compile(
     r"""^(http://|https://)([^][<>"\x00-\x20\x7F\s]+)
@@ -719,7 +720,7 @@ def unescape(text):
         except:
             return text  # leave as is
 
-    return re.sub("&#?(\w+);", fixup, text)
+    return re.sub(r"&#?(\w+);", fixup, text)
 
 
 # Match HTML comments
@@ -752,7 +753,7 @@ selfClosing_tag_patterns = [
 # Match HTML placeholder tags
 placeholder_tag_patterns = [
     (re.compile(r'<\s*%s(\s*| [^>]+?)>.*?<\s*/\s*%s\s*>' % (tag, tag), re.DOTALL | re.IGNORECASE),
-     repl) for tag, repl in list(placeholder_tags.items())
+     repl) for tag, repl in placeholder_tags.items()
 ]
 
 # Match preformatted lines
@@ -824,10 +825,8 @@ class Extractor(object):
         self.magicWords['currentday'] = time.strftime('%d')
         self.magicWords['currenthour'] = time.strftime('%H')
         self.magicWords['currenttime'] = time.strftime('%H:%M:%S')
-
         text = clean(self, text, expand_templates=expand_templates,
                      escape_doc=escape_doc)
-
         text = compact(text, mark_headers=mark_headers)
         return text
 
@@ -1250,8 +1249,8 @@ def findMatchingBraces(text, ldelim=0):
         reOpen = re.compile('[{]{%d,}' % ldelim)  # at least ldelim
         reNext = re.compile('[{]{2,}|}{2,}')  # at least 2
     else:
-        reOpen = re.compile('{{2,}|\[{2,}')
-        reNext = re.compile('{{2,}|}{2,}|\[{2,}|]{2,}')  # at least 2
+        reOpen = re.compile(r'{{2,}|\[{2,}')
+        reNext = re.compile(r'{{2,}|}{2,}|\[{2,}|]{2,}')  # at least 2
 
     cur = 0
     while True:
@@ -1502,7 +1501,7 @@ def sharp_ifeq(lvalue, rvalue, valueIfTrue, valueIfFalse=None, *args):
 
 
 def sharp_iferror(test, then='', Else=None, *args):
-    if re.match('<(?:strong|span|p|div)\s(?:[^\s>]*\s+)*?class="(?:[^"\s>]*\s+)*?error(?:\s[^">]*)?"', test):
+    if re.match(r'<(?:strong|span|p|div)\s(?:[^\s>]*\s+)*?class="(?:[^"\s>]*\s+)*?error(?:\s[^">]*)?"', test):
         return then
     elif Else is None:
         return test.strip()
@@ -1669,7 +1668,7 @@ def define_template(title, page):
     # title = normalizeTitle(title)
 
     # check for redirects
-    m = re.match('#REDIRECT.*?\[\[([^\]]*)]]', page[0], re.IGNORECASE)
+    m = re.match(r'#REDIRECT.*?\[\[([^\]]*)]]', page[0], re.IGNORECASE)
     if m:
         redirects[title] = m.group(1)  # normalizeTitle(m.group(1))
         return
