@@ -841,14 +841,13 @@ class Extractor(object):
         header = '<doc id="%s" url="%s" title="%s">\n' % (self.id, url, self.title)
         # Separate header from text with a newline.
         header += self.title + '\n\n'
-        header = header.encode('utf-8')
         footer = "\n</doc>\n"
         out.write(header)
 
         text = self.clean_text(text)
 
         for line in text:
-            out.write(line.encode('utf-8'))
+            out.write(line)
             out.write('\n')
         out.write(footer)
         errs = (self.template_title_errs,
