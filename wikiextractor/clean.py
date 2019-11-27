@@ -1,7 +1,7 @@
 from wikiextractor.extract import Extractor, ignoreTag, resetIgnoredTags
 
 
-def clean_markup(markup, keep_links=False, ignore_headers=True):
+def clean_markup(markup, accepted_namespaces, keep_links=False, ignore_headers=True):
     """
     Clean Wikimarkup to produce plaintext.
 
@@ -18,6 +18,7 @@ def clean_markup(markup, keep_links=False, ignore_headers=True):
 
     # returns a list of strings
     paragraphs = extractor.clean_text(markup,
+                                      accepted_namespaces,
                                       mark_headers=True,
                                       expand_templates=False,
                                       escape_doc=True)

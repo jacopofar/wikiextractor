@@ -43,7 +43,7 @@ discardElements = [
 # wiktionary: Wiki dictionary
 # wikt: shortcut for Wiktionary
 #
-acceptedNamespaces = ['w', 'wiktionary', 'wikt']
+accepted_namespaces = ['w', 'wiktionary', 'wikt']
 
 
 def get_url(uid):
@@ -53,7 +53,7 @@ def get_url(uid):
 # ======================================================================
 
 
-def clean(extractor, text, expand_templates=False, escape_doc=True):
+def clean(extractor, text, accepted_namespaces, expand_templates=False, escape_doc=True):
     """
     Transforms wiki markup. If the command line flag --escapedoc is set then the text is also escaped
     @see https://www.mediawiki.org/wiki/Help:Formatting
@@ -74,7 +74,7 @@ def clean(extractor, text, expand_templates=False, escape_doc=True):
     text = replaceExternalLinks(text)
 
     # replace internal links
-    text = replaceInternalLinks(text)
+    text = replaceInternalLinks(text, accepted_namespaces)
 
     # drop MagicWords behavioral switches
     text = magicWordsRE.sub('', text)
@@ -430,7 +430,7 @@ def makeExternalImage(url, alt=''):
 # Also: [[Help:IPA for Catalan|[andora]]]
 
 
-def replaceInternalLinks(text):
+def replaceInternalLinks(text, accepted_namespaces):
     """
     Replaces external links of the form:
     [[title |...|label]]trail
@@ -465,19 +465,19 @@ def replaceInternalLinks(text):
                     pipe = last  # advance
                 curp = e1
             label = inner[pipe + 1:].strip()
-        res += text[cur:s] + makeInternalLink(title, label) + trail
+        res += text[cur:s] + makeInternalLink(title, label, accepted_namespaces) + trail
         cur = end
     return res + text[cur:]
 
 
-def makeInternalLink(title, label):
+def makeInternalLink(title, label, accepted_namespaces):
     colon = title.find(':')
-    if colon > 0 and title[:colon] not in acceptedNamespaces:
+    if colon > 0 and title[:colon] not in accepted_namespaces:
         return ''
     if colon == 0:
         # drop also :File:
         colon2 = title.find(':', colon + 1)
-        if colon2 > 1 and title[colon + 1:colon2] not in acceptedNamespaces:
+        if colon2 > 1 and title[colon + 1:colon2] not in accepted_namespaces:
             return ''
     if Extractor.keepLinks:
         return '<a href="%s">%s</a>' % (urllib.parse.quote(title.encode('utf-8')), label)
@@ -812,7 +812,7 @@ class Extractor(object):
         self.recursion_exceeded_3_errs = 0  # parameter recursion
         self.template_title_errs = 0
 
-    def clean_text(self, text, mark_headers=False, expand_templates=False,
+    def clean_text(self, text, accepted_namespaces, mark_headers=False, expand_templates=False,
                    escape_doc=True):
         """
         :param mark_headers: True to distinguish headers from paragraphs
@@ -825,7 +825,7 @@ class Extractor(object):
         self.magicWords['currentday'] = time.strftime('%d')
         self.magicWords['currenthour'] = time.strftime('%H')
         self.magicWords['currenttime'] = time.strftime('%H:%M:%S')
-        text = clean(self, text, expand_templates=expand_templates,
+        text = clean(self, text, accepted_namespaces, expand_templates=expand_templates,
                      escape_doc=escape_doc)
         text = compact(text, mark_headers=mark_headers)
         return text
@@ -844,7 +844,7 @@ class Extractor(object):
         footer = "\n</doc>\n"
         out.write(header)
 
-        text = self.clean_text(text)
+        text = self.clean_text(text, accepted_namespaces)
 
         for line in text:
             out.write(line)

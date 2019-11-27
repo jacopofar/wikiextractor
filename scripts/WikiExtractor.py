@@ -258,7 +258,7 @@ def load_templates(file, output_file=None):
 
 
 def process_dump(input_file, template_file, out_file, file_size, file_compress,
-                 process_count):
+                 process_count, accepted_namespaces):
     """
     :param input_file: name of the wikipedia dump file; '-' to read from stdin
     :param template_file: optional file with template definitions.
@@ -399,7 +399,7 @@ def process_dump(input_file, template_file, out_file, file_size, file_compress,
             page.append(line)
         elif tag == '/page':
             colon = title.find(':')
-            if (colon < 0 or title[:colon] in acceptedNamespaces) and id != last_id and \
+            if (colon < 0 or title[:colon] in accepted_namespaces) and id != last_id and \
                     not redirect and not title.startswith(templateNamespace):
                 job = (id, title, page, ordinal)
                 jobs_queue.put(job)  # goes to any available extract_process
@@ -488,8 +488,7 @@ minFileSize = 200 * 1024
 
 
 def main():
-    global urlbase, acceptedNamespaces
-    global expand_templates, templateCache, escape_doc
+    global urlbase,expand_templates, templateCache, escape_doc
 
     parser = argparse.ArgumentParser(prog=os.path.basename(sys.argv[0]),
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -551,9 +550,9 @@ def main():
     except ValueError:
         logging.error('Insufficient or invalid size: %s', args.bytes)
         return
-
+    accepted_namespaces = []
     if args.namespaces:
-        acceptedNamespaces = set(args.namespaces.split(','))
+        accepted_namespaces = set(args.namespaces.split(','))
 
     FORMAT = '%(levelname)s: %(message)s'
     logging.basicConfig(format=FORMAT)
@@ -601,7 +600,7 @@ def main():
             return
 
     process_dump(input_file, args.templates, output_path, file_size,
-                 args.compress, args.processes)
+                 args.compress, args.processes, accepted_namespaces)
 
 
 if __name__ == '__main__':
