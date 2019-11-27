@@ -1,65 +1,23 @@
 # wikiextractor
-[WikiExtractor.py](http://medialab.di.unipi.it/wiki/Wikipedia_Extractor) is a Python script that extracts and cleans text from a [Wikipedia database dump](http://download.wikimedia.org/).
+This is a script that parses a Wikipedia dump and produces plaintext stripping templates, formatting and most of the usual issues in the code.
+The original code is from [attardi@github](https://github.com/attardi/wikiextractor), ported by [others](https://github.com/infolab-csail/wikiextractor) to Python3 and here slightly adapted for my specific use case.
 
-The tool is written in Python and requires Python 3.7 but no additional library.
-**Warning**: problems have been reported on Windows due to poor support for `StringIO` in the Python implementation on Windows.
-
-For further information, see the [project Home Page](http://medialab.di.unipi.it/wiki/Wikipedia_Extractor) or the [Wiki](https://github.com/attardi/wikiextractor/wiki).
-
-The current version performs template expansion by preprocesssng the whole dump and extracting template definitions.
-
-The latest version includes the following performance improvements:
-
-- multiprocessing is used for dealing with articles in parallel (this requires a Python installation with proper implementation of the StringIO library)
-- a cache is kept of parsed templates.
+The code is old and weird but does its work better than any other tool I know (wkparserfromhell is nice but requires much work to skip elements I don't want) so __use this code only if you have exactly my use case__ (producing a single text file from the compressed dump using Python 3).
 
 ## Usage
-The script is invoked with a Wikipedia dump file as an argument.
-The output is stored in several files of similar size in a given directory.
-Each file will contains several documents in this [document format](http://medialab.di.unipi.it/wiki/Document_Format).
 
-    usage: WikiExtractor.py [-h] [-o OUTPUT] [-b n[KMG]] [-c] [--html] [-l]
-			    [-ns ns1,ns2] [-s] [--templates TEMPLATES]
-			    [--no-templates] [--processes PROCESSES] [-q] [--debug]
-			    [-a] [-v]
-			    input
+The only supported usage is this:
 
-    positional arguments:
-      input                 XML wiki dump file
+    export PYTHONPATH=wikiextractor
+    python3 wikiextractor/scripts/WikiExtractor.py --no-template -o - --escapedoc itwiki-20191120-pages-articles.xml.bz2 > dump.txt
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      --processes PROCESSES number of processes to use (default: number of CPU cores)
+The `dump.txt` file will contain the text plus a sort of tag reporting the original title, for example:
 
-    Output:
-      -o OUTPUT, --output OUTPUT
-			    a directory where to store the extracted files (or '-' for dumping to
-                            stdout)
-      -b n[KMG], --bytes n[KMG]
-                            maximum bytes per output file (default 1M)
-      -c, --compress        compress output files using bzip
+    <doc id="2" url="?curid=2" title="Organo a pompa">
+    Organo a pompa
 
-    Processing:
-      --html                produce HTML output, subsumes --links
-      -l, --links           preserve links
-      -ns ns1,ns2, --namespaces ns1,ns2
-			    accepted namespaces
-      --templates TEMPLATES
-			    use or create file containing templates
-      --no-templates        Do not expand templates
-      --escapedoc           use to escape the contents of the output
-                            <doc>...</doc>
+    L'organo a pompa è un tipo di [...the whole article in plain text...]
 
-    Special:
-      -q, --quiet           suppress reporting progress info
-      --debug               print debug info
-      -a, --article         analyze a file containing a single article (debug option)
-      -v, --version         print program version
-
-Saving templates to a file will speed up performing extraction the next time,
-assuming template definitions have not changed.
-
-Option --no-templates significantly speeds up the extractor, avoiding the cost
-of expanding [MediaWiki templates](https://www.mediawiki.org/wiki/Help:Templates).
-
-For further information, visit [the documentation](http://attardi.github.io/wikiextractor).
+    </doc>
+    <doc id="3" url="?curid=3" title="Antropologia">
+    ...
